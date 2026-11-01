@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PopNight · Ajout de liens et finalisation</title>
+<style>
+:root{color-scheme:light;--bg:#f3f5f7;--surface:#fff;--soft:#e9eef3;--fg:#131a22;--muted:#5b6774;--line:#d5dde5;--accent:#1f5fa6;--accentfg:#fff;--ok:#17703c;--err:#a1261b} @media(prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#0e1217;--surface:#161c24;--soft:#1e2630;--fg:#e4e9ef;--muted:#97a2ae;--line:#2a3440;--accent:#7db6ee;--accentfg:#0b1420;--ok:#7fd29c;--err:#ff9d93}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,sans-serif}nav{position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--line);z-index:2}.nav,main{max-width:980px;margin:auto;padding:0 16px}.nav{display:flex;gap:8px;align-items:center}.nav-items{display:flex;gap:8px}.nav-toggle{display:none}.nav button{border:0;border-bottom:3px solid transparent;background:none;padding:14px;font-weight:700;color:var(--muted);cursor:pointer}.nav button.active{color:var(--accent);border-color:var(--accent)}main{margin:24px auto;padding-bottom:50px;display:grid;gap:16px}h1{font-size:24px;margin:0 0 6px}h2{font-size:17px;margin:0 0 12px}.muted,.hint,.lede{color:var(--muted)}.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}.input,textarea{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 11px;min-width:0;width:100%}.grow{flex:1 1 220px}.btn{font:inherit;border:1px solid var(--line);border-radius:8px;background:var(--soft);color:var(--fg);padding:9px 14px;cursor:pointer}.primary{background:var(--accent);color:var(--accentfg);border-color:transparent;font-weight:700}.btn:disabled{opacity:.45;cursor:not-allowed}.drop{display:block;border:1.5px dashed var(--line);border-radius:10px;padding:15px;text-align:center;background:var(--soft);cursor:pointer;flex:1 1 240px}.drop input{display:block;margin:8px auto 0;max-width:100%}.status{font-size:13px;min-height:1.4em;margin:8px 0 0;color:var(--muted);overflow-wrap:anywhere}.status.ok{color:var(--ok)}.status.err{color:var(--err)}.tab{display:none;gap:16px}.tab.active{display:grid}.list{display:grid;gap:8px}.result,.entry{display:flex;gap:10px;align-items:center;padding:9px;border:1px solid var(--line);border-radius:8px;min-width:0}.result img,.poster{width:48px;aspect-ratio:2/3;object-fit:cover;background:var(--soft);border-radius:4px;flex:none}.entry-main{min-width:0;flex:1;overflow-wrap:anywhere}.hint{font-size:13px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{min-width:0}.field label{display:block;font-weight:600;margin-bottom:5px}.hidden{display:none!important}@media(max-width:900px){.nav{display:block;padding-top:8px;padding-bottom:8px}.nav-toggle{display:block;width:100%;text-align:left;font-weight:800;border:1px solid var(--line);border-radius:8px;background:var(--soft);padding:12px}.nav-items{display:none;flex-direction:column;gap:0;padding-top:6px}.nav-items.open{display:flex}.nav-items button{text-align:left;width:100%;border-bottom:1px solid var(--line);padding:12px}.grid{grid-template-columns:1fr}.card{padding:14px}main{padding:12px 10px 30px;margin:10px auto}.result,.entry{align-items:flex-start}.btn{max-width:100%}}.nav{overflow-x:auto}.tab{min-width:0}.bottom-gen{position:sticky;bottom:0;z-index:5;background:var(--surface);border-top:1px solid var(--line);padding:10px max(12px,calc((100% - 948px)/2));display:flex;gap:12px;align-items:center;justify-content:space-between}.bottom-gen .btn{flex:none}@media(max-width:480px){.bottom-gen{padding:8px 10px}.bottom-gen .btn{font-size:12px;padding:10px}.bottom-gen span{font-size:11px}}
+</style></head><body>
+<nav><div class="nav"><button id="nav-toggle" class="nav-toggle" type="button" aria-label="Ouvrir le menu" aria-expanded="false">☰ MENU</button><div id="nav-items" class="nav-items"><button class="active" id="nav-add">AJOUT DE LIENS</button><button id="nav-replace">REMPLACEMENT LIENS</button><button id="nav-posters">VÉRIFICATION POSTERS</button><button id="nav-errors">ERREURS</button></div></div></nav>
+<main>
+<section id="addTab" class="tab active">
+<header><h1>Gestionnaire PopNight</h1><p class="lede">Importez vos playlists, choisissez le film ou la série dans TMDB, collez vos liens UQLOAD ou autres, puis choisissez exactement où les ajouter. Les entrées existantes sont conservées.</p></header>
+<div class="card"><h2>1 · Charger les playlists existantes</h2><div class="row"><label class="drop">Playlist séries (.w3u)<input id="seriesFile" type="file" accept=".w3u,.json"></label><label class="drop">Playlist films (.m3u)<input id="filmsFile" type="file" accept=".m3u,.m3u8"></label></div><p id="loadStatus" class="status">Chargez les fichiers que vous souhaitez mettre à jour.</p><p class="hint">Les fichiers originaux ne sont jamais écrasés : la génération crée des fichiers corrigés à télécharger.</p></div>
+<div class="card"><h2>2 · Clé API TMDB</h2><div class="row"><input id="apiKey" class="input grow" type="password" placeholder="Clé API TMDB v3 ou jeton v4"><button id="toggleKey" class="btn" type="button">Afficher</button><button id="testKey" class="btn primary" type="button">Tester</button></div><p id="keyStatus" class="status"></p></div>
+<div class="card"><h2>3 · Choisir le contenu et son affiche</h2><div class="grid"><div class="field"><label for="mediaType">Type de contenu</label><select id="mediaType" class="input"><option value="tv">Série</option><option value="movie">Film</option></select></div><div class="field"><label for="mediaName">Nom du film ou de la série</label><input id="mediaName" class="input" placeholder="Ex. Breaking Bad"></div></div><div class="row" style="margin-top:10px"><button id="searchTmdb" class="btn primary" type="button">Rechercher dans TMDB</button></div><p id="searchStatus" class="status" aria-live="polite"></p><div id="tmdbResults" class="list"></div><p id="selectedInfo" class="status"></p></div>
+<div id="placementCard" class="card hidden"><h2>4 · Choisir où ajouter les liens</h2><div id="tvPlacement" class="grid"><div class="field"><label for="seriesTarget">Série repère (pour ajouter des épisodes ou positionner la nouvelle série)</label><select id="seriesTarget" class="input"></select></div><div class="field"><label for="newSeriesName">Nom de la nouvelle série (laisser vide pour ajouter des épisodes à la série repère)</label><input id="newSeriesName" class="input" placeholder="Nom de la nouvelle série"></div><div class="field"><label for="seriesPosition">Position de la nouvelle série</label><select id="seriesPosition" class="input"><option value="after">Après la série repère</option><option value="before">Avant la série repère</option></select></div><div class="field"><label for="seasonNumber">Saison</label><input id="seasonNumber" class="input" type="number" min="1" step="1" value="1"></div><div class="field"><label for="episodeStart">Premier numéro d'épisode</label><input id="episodeStart" class="input" type="number" min="1" step="1" value="1"></div></div><div id="moviePlacement" class="field hidden"><label for="movieCategory">Catégorie du film (tu peux choisir une catégorie existante ou en écrire une)</label><input id="movieCategory" class="input" list="movieCategories" value="HD | Films"><datalist id="movieCategories"></datalist></div><div class="field" style="margin-top:12px"><label for="linksInput">Liens vidéo (un lien par ligne)</label><textarea id="linksInput" rows="7" placeholder="Collez ici le texte complet, même avec des titres et des commentaires.&#10;&#10;Saison 1 (6 épisodes) :&#10;https://uqload...&#10;https://luluvdo...&#10;&#10;Saison 2 :&#10;..."></textarea><p id="linkAnalysis" class="hint">Les liens http/https seront extraits automatiquement du texte. Les titres, nombres d’épisodes et autres commentaires seront ignorés. Pour une série, les titres « Saison 1 », « Saison 2 », etc. permettent de répartir automatiquement les épisodes.</p></div><p id="linkCount" class="status" aria-live="polite">Aucun lien détecté pour le moment.</p><div class="row" style="margin-top:12px"><button id="addLinks" class="btn primary" type="button" disabled>Ajouter les liens à la playlist</button></div><p id="addStatus" class="status" aria-live="polite"></p></div>
+<div class="card"><h2>5 · État des playlists</h2><p id="counts" class="hint">Séries : non chargées · Films : non chargés</p><div class="row"><button id="showSeries" class="btn" type="button">Voir les séries</button><button id="showFilms" class="btn" type="button">Voir les films</button></div><div id="entries" class="list" style="margin-top:12px"></div></div>
+</section>
+<section id="replaceTab" class="tab">
+<header><h1>Remplacement de liens morts</h1><p class="lede">Tu peux importer directement ici le M3U ou le W3U concerné, sélectionner le film ou la série, puis coller les nouveaux liens. Les autres entrées restent intactes.</p></header>
+<div class="card"><h2>1 · Importer le fichier à corriger</h2><div class="row">
+<label class="drop">Charger la playlist Films (.m3u)<input id="replaceFilmsFile" type="file" accept=".m3u,.m3u8"></label>
+<label class="drop">Charger la playlist Séries (.w3u)<input id="replaceSeriesFile" type="file" accept=".w3u,.json"></label>
+</div><p id="replaceLoadStatus" class="status">Importe ici le fichier concerné, même si tu ne l’as pas chargé dans la catégorie Ajout.</p></div>
+<div class="card"><h2>2 · Choisir le contenu à corriger</h2><div class="grid"><label class="field">Fichier concerné<select id="replaceKind" class="input"><option value="movie">Films — M3U</option><option value="tv">Séries — W3U</option></select></label><label class="field">Film ou série<select id="replaceTarget" class="input"><option value="">Charge d’abord le fichier concerné</option></select></label></div><p id="replaceInfo" class="status"></p></div>
+<div class="card"><h2>3 · Nouveaux liens</h2><label class="field">Colle le texte contenant les nouveaux liens<textarea id="replaceLinks" class="input" rows="7" placeholder="Tu peux coller du texte libre : seuls les liens http/https seront récupérés."></textarea></label><p id="replaceCount" class="status">0 nouveau lien détecté.</p><button id="applyReplace" class="btn primary" type="button">Remplacer les anciens liens</button><p id="replaceStatus" class="status"></p></div>
+</section>
+<section id="postersTab" class="tab">
+<header><h1>Vérification des affiches TMDB</h1><p class="lede">Importe directement ici ton M3U ou W3U, sélectionne un film, une série ou une saison, recherche le bon résultat TMDB et applique son affiche dans la playlist.</p></header>
+<div class="card"><h2>1 · Importer le fichier à vérifier</h2><div class="row">
+<label class="drop">Charger la playlist Films (.m3u)<input id="posterFilmsFile" type="file" accept=".m3u,.m3u8"></label>
+<label class="drop">Charger la playlist Séries (.w3u)<input id="posterSeriesFile" type="file" accept=".w3u,.json"></label>
+</div><p id="posterLoadStatus" class="status">Importe ici le fichier dont tu veux vérifier les affiches.</p></div>
+<div class="card"><h2>2 · Choisir le contenu</h2><div class="grid"><label class="field">Playlist<select id="posterKind" class="input"><option value="movie">Films — M3U</option><option value="tv">Séries — W3U</option></select></label><label class="field">Film, série ou saison<select id="posterTarget" class="input"><option value="">Charge d’abord le fichier concerné</option></select></label></div><p id="posterInfo" class="status"></p></div>
+<div class="card"><h2>3 · Trouver la bonne affiche sur TMDB</h2><div class="row"><input id="posterSearch" class="input grow" placeholder="Titre du film ou de la série"><button id="posterSearchBtn" class="btn primary" type="button">Rechercher</button></div><div id="posterResults" class="list" style="margin-top:12px"></div><p id="posterStatus" class="status"></p></div>
+</section>
+<section id="errorsTab" class="tab">
+<header><h1>Contrôle et correction des erreurs</h1><p class="lede">Importe les fichiers à contrôler. L’outil vérifie leur structure, les titres, les groupes, les saisons, les épisodes et les liens. Il ne supprimera pas de contenu et ne fabriquera jamais de lien manquant.</p></header>
+<div class="card"><h2>1 · Importer les fichiers à vérifier</h2><div class="row">
+<label class="drop">Playlist Films (.m3u)<input id="errorFilmsFile" type="file" accept=".m3u,.m3u8"></label>
+<label class="drop">Playlist Séries (.w3u)<input id="errorSeriesFile" type="file" accept=".w3u,.json"></label>
+</div><p id="errorLoadStatus" class="status">Tu peux aussi contrôler les fichiers déjà chargés dans les autres catégories.</p></div>
+<div class="card"><h2>2 · Résultat du contrôle</h2><div class="row"><button id="runAudit" class="btn primary" type="button">ANALYSER LES FICHIERS</button></div><p id="auditSummary" class="status">Aucune analyse effectuée.</p><div id="auditResults" class="list"></div></div>
+<div class="card"><h2>3 · Correction et génération</h2><p class="hint">Les corrections automatiques portent uniquement sur les éléments sûrs : ordre numérique des saisons (1, 2, 3…), champs de nom manquants pouvant recevoir un nom neutre et format de sortie. Les liens absents ou invalides et les informations ambiguës seront signalés, pas inventés.</p><button id="repairGenerate" class="btn primary" type="button">CORRIGER ET GÉNÉRER LES FICHIERS</button><p id="repairStatus" class="status"></p></div>
+</section>
+<div class="card"><h2>État des playlists</h2><p id="counts" class="hint">Séries : non chargées · Films : non chargés</p></div>
+<div class="card"><h2>Génération des fichiers</h2><p id="finalSummary" class="hint">Chargez les fichiers pour commencer.</p><p id="finalStatus" class="status"></p><button id="generate" class="btn primary" type="button" disabled>GÉNÉRER LES FICHIERS MODIFIÉS</button></div>
+</main><div class="bottom-gen"><span class="hint">Télécharger les playlists mises à jour</span><button class="btn primary" type="button" id="generateBottom">GÉNÉRER</button></div>
+<script>
+(()=>{'use strict';
+const API='https://api.themoviedb.org/3', $=id=>document.getElementById(id);const state={key:'',series:null,films:null,seriesName:'PopNight_serie.w3u',filmsName:'PopNight_Films.m3u',selected:null,selectedType:null,lastView:'series'};
+const posterURL=p=>p?'https://image.tmdb.org/t/p/w500'+p:'';const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+$('nav-toggle').onclick=()=>{const open=$('nav-items').classList.toggle('open');$('nav-toggle').setAttribute('aria-expanded',String(open));$('nav-toggle').textContent=open?'✕ FERMER':'☰ MENU'};
+function switchTab(t){$('nav-items').classList.remove('open');$('nav-toggle').setAttribute('aria-expanded','false');$('nav-toggle').textContent='☰ MENU';$('addTab').classList.toggle('active',t==='add');$('replaceTab').classList.toggle('active',t==='replace');$('postersTab').classList.toggle('active',t==='posters');$('errorsTab').classList.toggle('active',t==='errors');['add','replace','posters','errors'].forEach(x=>$('nav-'+x).classList.toggle('active',x===t));updateFinal();if(t==='replace')refreshReplaceTargets();if(t==='posters')refreshPosterTargets();if(t==='errors')runAudit()};$('nav-add').onclick=()=>switchTab('add');$('nav-replace').onclick=()=>switchTab('replace');$('nav-posters').onclick=()=>switchTab('posters');$('nav-errors').onclick=()=>switchTab('errors');
+function parseM3U(txt){const lines=txt.replace(/^\uFEFF/,'').split(/\r?\n/),items=[];for(let i=0;i<lines.length;i++){const l=lines[i].trim();if(!l.startsWith('#EXTINF:'))continue;const comma=l.indexOf(',');let url='';for(let j=i+1;j<lines.length;j++){const v=lines[j].trim();if(v&&!v.startsWith('#')){url=v;i=j;break}}items.push({meta:comma<0?l:l.slice(0,comma),title:comma<0?'Sans titre':l.slice(comma+1).trim(),url})}return{items}};
+function serializeM3U(d){return '#EXTM3U\n'+d.items.map(x=>`${x.meta},${x.title}\n${x.url||''}`).join('\n')+'\n'};
+function updateCounts(){$('counts').textContent=`Séries : ${state.series?state.series.groups.length+' entrées':'non chargées'} · Films : ${state.films?state.films.items.length+' entrées':'non chargés'}`;$('generate').disabled=!(state.series||state.films);$('addLinks').disabled=!state.selected||((state.selectedType==='tv'&&!state.series)||(state.selectedType==='movie'&&!state.films))}
+
+async function loadPlaylistFile(file, kind, statusId){
+ if(!file)return;
+ try{
+  const content=await file.text();
+  if(kind==='tv'){
+   const obj=JSON.parse(content);
+   if(!Array.isArray(obj.groups))throw Error('Structure W3U invalide : groupe principal introuvable.');
+   state.series=obj;state.seriesName=file.name;
+   $(statusId).textContent=`${file.name} chargé : ${obj.groups.length} série(s)/groupe(s).`;
+  }else{
+   state.films=parseM3U(content);state.filmsName=file.name;
+   if(!state.films.items.length)throw Error('Aucune entrée #EXTINF détectée dans ce M3U.');
+   $(statusId).textContent=`${file.name} chargé : ${state.films.items.length} entrée(s).`;
+  }
+  $(statusId).className='status ok';
+  refreshSeriesSelect();refreshCategories();updateCounts();updateFinal();
+  refreshReplaceTargets();refreshPosterTargets();
+  renderEntries(kind==='tv'?'series':'films');
+ }catch(err){
+  $(statusId).textContent='Impossible de charger ce fichier : '+err.message;
+  $(statusId).className='status err';
+ }
+}
+
+$('seriesFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const o=JSON.parse(await f.text());if(!Array.isArray(o.groups))throw Error('Structure W3U invalide');state.series=o;state.seriesName=f.name;$('loadStatus').textContent=`${f.name} chargé : ${o.groups.length} séries/groupes. Les saisons et épisodes d'origine sont conservés.`;$('loadStatus').className='status ok';refreshSeriesSelect();updateCounts();renderEntries('series')}catch(err){$('loadStatus').textContent='Erreur W3U : '+err.message;$('loadStatus').className='status err'}};
+$('filmsFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{state.films=parseM3U(await f.text());state.filmsName=f.name;$('loadStatus').textContent=`${f.name} chargé : ${state.films.items.length} entrées conservées.`;$('loadStatus').className='status ok';refreshCategories();updateCounts();renderEntries('films')}catch(err){$('loadStatus').textContent='Erreur M3U : '+err.message;$('loadStatus').className='status err'}};
+function refreshSeriesSelect(){const groups=state.series?.groups||[];$('seriesTarget').innerHTML=groups.map((g,i)=>`<option value="${i}">${esc(g.name||'Sans nom')}</option>`).join('')||'<option value="">Aucune série existante</option>'}
+function refreshCategories(){const cats=[...new Set((state.films?.items||[]).map(x=>(x.meta.match(/group-title="([^"]*)"/i)||[])[1]).filter(Boolean))];$('movieCategories').innerHTML=cats.map(c=>`<option value="${esc(c)}">`).join('')}
+$('showSeries').onclick=()=>renderEntries('series');$('showFilms').onclick=()=>renderEntries('films');
+function renderEntries(which){
+ state.lastView=which;let rows=[];
+ if(which==='series'&&state.series){
+  rows=state.series.groups.map((g,i)=>({name:g.name||'Série sans nom',info:(g.groups||g.seasons||[]).length+' saisons',image:g.image,index:i}));
+ }else if(which==='films'&&state.films){
+  const unique=[];const seen=new Set();
+  state.films.items.forEach((x)=>{const key=x.title||'';if(!seen.has(key)){seen.add(key);unique.push({name:key||'Film sans titre',info:state.films.items.filter(y=>y.title===x.title).length+' source(s)',image:(x.meta.match(/(?:tvg-logo|logo)="([^"]*)"/i)||[])[1],title:x.title})}});
+  rows=unique.slice(-150);
+ }
+ $('entries').innerHTML=rows.length?rows.map(r=>`<div class="entry">${r.image?`<img class="poster" src="${esc(r.image)}" alt="Affiche">`:'<div class="poster"></div>'}<div class="entry-main"><strong>${esc(r.name)}</strong><div class="hint">${esc(r.info)}</div></div><button class="btn delete-entry" type="button" data-delete="${esc(which)}" data-index="${r.index??''}" data-title="${esc(r.title??'')}" aria-label="Supprimer ${esc(r.name)}">Supprimer</button></div>`).join(''):'<p class="hint">Aucun élément à afficher.</p>';
+ $('entries').querySelectorAll('[data-delete]').forEach(btn=>btn.onclick=()=>{
+  if(btn.dataset.delete==='series'){
+   const i=Number(btn.dataset.index),s=state.series?.groups[i];if(!s)return;
+   if(!confirm(`Supprimer la série « ${s.name||'sans nom'} » et toutes ses saisons/épisodes de la playlist ?`))return;
+   state.series.groups.splice(i,1);refreshSeriesSelect();refreshReplaceTargets();refreshPosterTargets();
+  }else{
+   const title=btn.dataset.title;if(!confirm(`Supprimer le film « ${title} » et toutes ses sources de la playlist ?`))return;
+   state.films.items=state.films.items.filter(x=>x.title!==title);refreshCategories();refreshReplaceTargets();refreshPosterTargets();
+  }
+  updateCounts();updateFinal();renderEntries(which);
+ });
+}
+async function tmdb(path,params={}){if(!state.key)throw Error('Saisissez puis testez votre clé TMDB.');const u=new URL(API+path);Object.entries(params).forEach(([k,v])=>u.searchParams.set(k,v));const h={accept:'application/json'};if(state.key.length>40)h.Authorization='Bearer '+state.key;else u.searchParams.set('api_key',state.key);const r=await fetch(u,{headers:h});if(!r.ok)throw Error('Erreur TMDB '+r.status);return r.json()}
+$('toggleKey').onclick=()=>{$('apiKey').type=$('apiKey').type==='password'?'text':'password'};$('testKey').onclick=async()=>{state.key=$('apiKey').value.trim();try{await tmdb('/configuration');$('keyStatus').textContent='Clé TMDB valide.';$('keyStatus').className='status ok'}catch(e){$('keyStatus').textContent=e.message;$('keyStatus').className='status err'}};
+$('mediaType').onchange=()=>{state.selected=null;$('placementCard').classList.add('hidden');$('tmdbResults').innerHTML='';$('selectedInfo').textContent='';updateCounts()};
+$('searchTmdb').onclick=async()=>{const type=$('mediaType').value,q=$('mediaName').value.trim();if(!q){$('searchStatus').textContent='Indiquez un titre.';return}if(type==='tv'&&!state.series){$('searchStatus').textContent='Importez d’abord PopNight_serie.w3u.';$('searchStatus').className='status err';return}if(type==='movie'&&!state.films){$('searchStatus').textContent='Importez d’abord PopNight_Films.m3u.';$('searchStatus').className='status err';return}try{$('searchStatus').textContent='Recherche TMDB…';$('tmdbResults').innerHTML='';const data=await tmdb('/search/'+type,{query:q,language:'fr-FR'});if(!data.results?.length)throw Error('Aucun résultat.');$('searchStatus').textContent='Sélectionnez le bon titre et son affiche.';$('searchStatus').className='status ok';$('tmdbResults').innerHTML=data.results.slice(0,10).map((r,i)=>{const title=r.title||r.name,year=(r.release_date||r.first_air_date||'').slice(0,4),img=posterURL(r.poster_path);return `<div class="result">${img?`<img src="${esc(img)}" alt="Affiche">`:'<div class="poster"></div>'}<div class="entry-main"><strong>${esc(title)}</strong><div class="hint">${esc(year)}</div></div><button type="button" class="btn primary" data-pick="${i}">Choisir</button></div>`}).join('');$('tmdbResults').querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>selectTitle(data.results[+b.dataset.pick],type))}catch(e){$('searchStatus').textContent=e.message;$('searchStatus').className='status err'}};
+
+function extractLinkData(raw, fallbackSeason, fallbackEpisode){
+  const lines=String(raw||'').split(/\r?\n/);
+  const sections=[];
+  let current={season:null, links:[]};
+  const flush=()=>{if(current.links.length)sections.push(current);};
+  const urlRegex=/https?:\/\/[^\s<>"'`]+/gi;
+  for(const line of lines){
+    const seasonMatch=line.match(/(?:saison|season)\s*#?\s*(\d+)/i);
+    if(seasonMatch){
+      flush();
+      current={season:Number(seasonMatch[1]),links:[]};
+    }
+    const found=line.match(urlRegex)||[];
+    for(let url of found){
+      url=url.replace(/[),.;\]}]+$/g,'');
+      if(url)current.links.push(url);
+    }
+  }
+  flush();
+  if(!sections.length){
+    const all=String(raw||'').match(urlRegex)||[];
+    const clean=all.map(u=>u.replace(/[),.;\]}]+$/g,'')).filter(Boolean);
+    if(clean.length)sections.push({season:Number(fallbackSeason)||1,links:clean});
+  } else {
+    // Links before the first explicit season heading use the selected season.
+    const firstHeading=lines.findIndex(l=>/(?:saison|season)\s*#?\s*\d+/i.test(l));
+    if(firstHeading>0){
+      const before=lines.slice(0,firstHeading).join('\n').match(urlRegex)||[];
+      const clean=before.map(u=>u.replace(/[),.;\]}]+$/g,'')).filter(Boolean);
+      if(clean.length)sections.unshift({season:Number(fallbackSeason)||1,links:clean});
+    }
+  }
+  return sections;
+}
+function refreshLinkAnalysis(){
+  const raw=$('linksInput').value;
+  const sections=extractLinkData(raw,$('seasonNumber')?.value,$('episodeStart')?.value);
+  const total=sections.reduce((n,s)=>n+s.links.length,0);
+  if(!total){$('linkCount').textContent='Aucun lien détecté pour le moment.';return}
+  const detail=sections.map(s=>`Saison ${s.season} : ${s.links.length} épisode(s)`).join(' · ');
+  $('linkCount').textContent=`${total} lien(s) détecté(s)${state.selectedType==='tv'?' — '+detail:''}.`;
+}
+
+function selectTitle(hit,type){state.selected={id:hit.id,title:hit.title||hit.name,poster:posterURL(hit.poster_path)};state.selectedType=type;$('selectedInfo').textContent=`Sélection : ${state.selected.title} — affiche TMDB sélectionnée.`;$('placementCard').classList.remove('hidden');$('tvPlacement').classList.toggle('hidden',type!=='tv');$('moviePlacement').classList.toggle('hidden',type!=='movie');$('addLinks').disabled=false;if(type==='tv'){refreshSeriesSelect();$('newSeriesName').value=''}else refreshCategories();$('addStatus').textContent='';updateCounts()}
+$('linksInput').addEventListener('input',refreshLinkAnalysis);$('seasonNumber').addEventListener('input',refreshLinkAnalysis);$('linksInput').addEventListener('paste',()=>setTimeout(refreshLinkAnalysis,0));
+$('addLinks').onclick=async()=>{if(!state.selected)return;const sections=extractLinkData($('linksInput').value,$('seasonNumber').value,$('episodeStart').value);const links=sections.flatMap(s=>s.links);if(!links.length){$('addStatus').textContent='Collez au moins un lien vidéo.';$('addStatus').className='status err';return}const sel=state.selected;let added=0;
+if(state.selectedType==='tv'){const newName=$('newSeriesName').value.trim(),idx=Number($('seriesTarget').value);let serie;if(newName){const anchor=state.series.groups[idx];serie={name:newName,image:sel.poster,groups:[]};if(!anchor){state.series.groups.push(serie)}else{const insertAt=$('seriesPosition').value==='before'?idx:idx+1;state.series.groups.splice(insertAt,0,serie)}}else{serie=state.series.groups[idx];if(!serie){$('addStatus').textContent='Choisissez une série existante ou indiquez le nom d’une nouvelle série.';$('addStatus').className='status err';return}}if(!Array.isArray(serie.groups))serie.groups=[];const hasSeasonHeaders=/(?:saison|season)\s*#?\s*\d+/i.test($('linksInput').value);const seasonPosters={};const seasonNumbers=[...new Set(sections.map(s=>Math.max(1,Number(s.season)||1)))];$('addStatus').textContent='Récupération des affiches de chaque saison sur TMDB…';$('addStatus').className='status';for(const sn of seasonNumbers){try{const seasonData=await tmdb(`/tv/${sel.id}/season/${sn}`,{language:'fr-FR'});seasonPosters[sn]=posterURL(seasonData.poster_path)||sel.poster}catch(e){seasonPosters[sn]=sel.poster}}sections.forEach(section=>{const sn=Math.max(1,Number(section.season)||1);let season=serie.groups.find(g=>{const m=(g.name||'').match(/(\d+)/);return m&&Number(m[1])===sn});const seasonPoster=seasonPosters[sn]||sel.poster;if(!season){season={name:'Saison '+sn,image:seasonPoster,stations:[]};serie.groups.push(season)}else{season.image=seasonPoster}if(!Array.isArray(season.stations))season.stations=[];let ep=hasSeasonHeaders?1:Math.max(1,Number($('episodeStart').value)||1);section.links.forEach(url=>{season.stations.push({name:'Épisode '+ep,image:seasonPoster,url});ep++;added++})});
+}else{const category=$('movieCategory').value.trim()||'HD | Films';links.forEach(url=>{const meta=`#EXTINF:-1 tvg-logo="${sel.poster}" group-title="${category.replace(/"/g,'&quot;')}"`;state.films.items.push({meta,title:sel.title,url});added++})}
+$('addStatus').textContent=`${added} lien(s) détecté(s) et ajouté(s) pour « ${sel.title} ». La playlist existante a été conservée.`;$('addStatus').className='status ok';$('linksInput').value='';refreshLinkAnalysis();renderEntries(state.selectedType==='tv'?'series':'films');updateCounts();updateFinal()};
+
+function collectSeriesStations(node,out=[]){
+ if(!node||typeof node!=='object')return out;
+ if(Array.isArray(node.stations)){node.stations.forEach(x=>{if(x&&typeof x==='object'&&('url'in x||'link'in x))out.push(x);else collectSeriesStations(x,out)})}
+ if(Array.isArray(node.groups))node.groups.forEach(x=>collectSeriesStations(x,out));
+ if(Array.isArray(node.seasons))node.seasons.forEach(x=>collectSeriesStations(x,out));
+ if(Array.isArray(node.episodes))node.episodes.forEach(x=>{if(x&&typeof x==='object')out.push(x)});
+ return out;
+}
+function allSeasonNodes(serie){const a=[];if(Array.isArray(serie.groups))serie.groups.forEach(g=>a.push(g));if(Array.isArray(serie.seasons))serie.seasons.forEach(g=>a.push(g));return a}
+function refreshReplaceTargets(){
+ const kind=$('replaceKind').value,sel=$('replaceTarget');let opts=[];
+ if(kind==='movie'&&state.films){const names=[...new Set(state.films.items.map(x=>x.title).filter(Boolean))];opts=names.map(n=>({value:n,label:n}))}
+ if(kind==='tv'&&state.series){opts=state.series.groups.map((g,i)=>({value:String(i),label:g.name||'Série '+(i+1)}))}
+ sel.innerHTML=opts.length?opts.map(o=>`<option value="${esc(o.value)}">${esc(o.label)}</option>`).join(''):'<option value="">Charge le fichier correspondant</option>';
+ updateReplaceInfo();
+}
+function updateReplaceInfo(){const k=$('replaceKind').value,v=$('replaceTarget').value;if(!v){$('replaceInfo').textContent='Aucun contenu sélectionné.';return}
+ if(k==='movie'){const n=state.films.items.filter(x=>x.title===v).length;$('replaceInfo').textContent=`${n} source(s) trouvée(s) pour ce film.`}
+ else{const g=state.series.groups[Number(v)],n=collectSeriesStations(g,[]).length;$('replaceInfo').textContent=`${n} épisode(s)/lien(s) trouvé(s) dans cette série.`}}
+
+$('replaceFilmsFile').onchange=e=>loadPlaylistFile(e.target.files[0],'movie','replaceLoadStatus');
+$('replaceSeriesFile').onchange=e=>loadPlaylistFile(e.target.files[0],'tv','replaceLoadStatus');
+$('posterFilmsFile').onchange=e=>loadPlaylistFile(e.target.files[0],'movie','posterLoadStatus');
+$('posterSeriesFile').onchange=e=>loadPlaylistFile(e.target.files[0],'tv','posterLoadStatus');
+$('errorFilmsFile').onchange=e=>loadPlaylistFile(e.target.files[0],'movie','errorLoadStatus');
+$('errorSeriesFile').onchange=e=>loadPlaylistFile(e.target.files[0],'tv','errorLoadStatus');
+
+
+$('replaceKind').onchange=refreshReplaceTargets;$('replaceTarget').onchange=updateReplaceInfo;
+$('replaceLinks').addEventListener('input',()=>{const n=( $('replaceLinks').value.match(/https?:\/\/[^\s<>"'`]+/gi)||[]).length;$('replaceCount').textContent=`${n} nouveau(x) lien(s) détecté(s).`});
+$('applyReplace').onclick=()=>{
+ const kind=$('replaceKind').value,v=$('replaceTarget').value,urls=($('replaceLinks').value.match(/https?:\/\/[^\s<>"'`]+/gi)||[]).map(x=>x.replace(/[),.;\]}]+$/g,''));
+ if(!v||!urls.length){$('replaceStatus').textContent='Choisis un contenu et colle au moins un lien valide.';$('replaceStatus').className='status err';return}
+ let targets=[];
+ if(kind==='movie'){targets=state.films.items.filter(x=>x.title===v)}
+ else{targets=collectSeriesStations(state.series.groups[Number(v)],[])}
+ const count=Math.min(targets.length,urls.length);
+ if(!count){$('replaceStatus').textContent='Aucun ancien lien trouvé pour cette sélection.';$('replaceStatus').className='status err';return}
+ for(let i=0;i<count;i++){if('url'in targets[i])targets[i].url=urls[i];else if('link'in targets[i])targets[i].link=urls[i];else targets[i].url=urls[i]}
+ $('replaceStatus').textContent=`${count} ancien(s) lien(s) remplacé(s). ${Math.max(0,targets.length-urls.length)} ancien(s) lien(s) non modifié(s). Aucun épisode ni film n’a été supprimé.`;
+ $('replaceStatus').className='status ok';$('replaceLinks').value='';$('replaceCount').textContent='0 nouveau lien détecté.';updateReplaceInfo();updateCounts();updateFinal();
+};
+function refreshPosterTargets(){
+ const k=$('posterKind').value,sel=$('posterTarget');let opts=[];
+ if(k==='movie'&&state.films){const seen=new Set();state.films.items.forEach((x,i)=>{const key=x.title;if(!seen.has(key)){seen.add(key);opts.push({value:String(i),label:x.title||'Film sans titre'})}})}
+ if(k==='tv'&&state.series){state.series.groups.forEach((g,i)=>{opts.push({value:'s:'+i,label:'Série · '+(g.name||'Sans nom')});allSeasonNodes(g).forEach((s,j)=>opts.push({value:`s:${i}:season:${j}`,label:'— '+(s.name||'Saison '+(j+1))}))})}
+ sel.innerHTML=opts.length?opts.map(o=>`<option value="${esc(o.value)}">${esc(o.label)}</option>`).join(''):'<option value="">Charge le fichier correspondant</option>';
+ updatePosterTargetInfo();
+}
+let posterAuditTarget=null;
+function updatePosterTargetInfo(){
+ const k=$('posterKind').value,v=$('posterTarget').value;posterAuditTarget=null;
+ if(!v){$('posterInfo').textContent='Aucun élément sélectionné.';return}
+ if(k==='movie'){const item=state.films.items[Number(v)];posterAuditTarget={kind:'movie',item};$('posterSearch').value=item.title;$('posterInfo').textContent='Affiche actuelle : '+(((item.meta.match(/(?:tvg-logo|logo)="([^"]*)"/i)||[])[1])||'Aucune affiche');}
+ else{const parts=v.split(':').map((x,i)=>i===0?x:x);const si=Number(parts[1]),serie=state.series.groups[si];if(parts.length===2){posterAuditTarget={kind:'series',serie};$('posterSearch').value=serie.name||'';$('posterInfo').textContent='Affiche actuelle de la série : '+(serie.image||'aucune')}else{const season=allSeasonNodes(serie)[Number(parts[3])];posterAuditTarget={kind:'season',serie,season};$('posterSearch').value=(serie.name||'')+' '+(season.name||'');$('posterInfo').textContent='Affiche actuelle de la saison : '+(season.image||'aucune')}}
+}
+$('posterKind').onchange=refreshPosterTargets;$('posterTarget').onchange=updatePosterTargetInfo;
+$('posterSearchBtn').onclick=async()=>{
+ const q=$('posterSearch').value.trim(),kind=posterAuditTarget?.kind==='movie'?'movie':'tv';if(!q){$('posterStatus').textContent='Saisis un titre à rechercher.';return}
+ try{$('posterStatus').textContent='Recherche TMDB…';const d=await tmdb('/search/'+kind,{query:q,language:'fr-FR'});$('posterResults').innerHTML=(d.results||[]).slice(0,10).map((r,i)=>{const img=posterURL(r.poster_path);return `<div class="result">${img?`<img src="${esc(img)}" alt="Affiche">`:'<div class="poster"></div>'}<div class="entry-main"><strong>${esc(r.title||r.name)}</strong><div class="hint">${esc((r.release_date||r.first_air_date||'').slice(0,4))}</div></div><button class="btn primary" data-audit="${i}" type="button">Appliquer</button></div>`}).join('')||'Aucun résultat';$('posterResults').querySelectorAll('[data-audit]').forEach(b=>b.onclick=()=>applyPoster(d.results[Number(b.dataset.audit)]));$('posterStatus').textContent='Choisis le bon résultat TMDB.'}
+ catch(e){$('posterStatus').textContent=e.message;$('posterStatus').className='status err'}
+};
+async function applyPoster(hit){
+ if(!posterAuditTarget)return;const poster=posterURL(hit.poster_path);if(!poster){$('posterStatus').textContent='TMDB ne fournit pas d’affiche pour ce résultat.';return}
+ const t=posterAuditTarget;
+ if(t.kind==='movie'){const title=t.item.title;state.films.items.filter(x=>x.title===title).forEach(x=>{x.meta=x.meta.replace(/(?:tvg-logo|logo)="[^"]*"/i,'').trim()+` tvg-logo="${poster}"`})}
+ else if(t.kind==='series'){t.serie.image=poster;const seasons=allSeasonNodes(t.serie);for(const s of seasons){const m=(s.name||'').match(/(\d+)/);if(m){try{const sd=await tmdb(`/tv/${hit.id}/season/${m[1]}`,{language:'fr-FR'});s.image=posterURL(sd.poster_path)||poster;(s.stations||[]).forEach(ep=>{ep.image=s.image})}catch(e){s.image=poster;(s.stations||[]).forEach(ep=>{ep.image=poster})}}}}
+ else if(t.kind==='season'){const m=(t.season.name||'').match(/(\d+)/);let seasonPoster=poster;if(m){try{const sd=await tmdb(`/tv/${hit.id}/season/${m[1]}`,{language:'fr-FR'});seasonPoster=posterURL(sd.poster_path)||poster}catch(e){seasonPoster=poster}}t.season.image=seasonPoster;(t.season.stations||[]).forEach(ep=>{ep.image=seasonPoster})}
+ $('posterStatus').textContent='Affiche mise à jour dans la playlist.';$('posterStatus').className='status ok';updatePosterTargetInfo();updateCounts();updateFinal();
+}
+
+
+function auditPlaylists(){
+ const findings=[];let fixable=0,manual=0;
+ const add=(file,level,msg,canFix=false)=>{findings.push({file,level,msg,canFix});if(canFix)fixable++;else if(level==='err')manual++};
+ if(!state.films&&!state.series)add('Fichiers','info','Aucun fichier chargé. Importe un M3U et/ou un W3U.');
+ if(state.films){
+  if(!Array.isArray(state.films.items))add(state.filmsName,'err','La liste des entrées M3U est absente ou invalide.',false);
+  else{
+   if(!state.films.items.length)add(state.filmsName,'info','Le fichier M3U ne contient aucune entrée #EXTINF.');
+   state.films.items.forEach((it,i)=>{
+    if(!it||typeof it!=='object'){add(state.filmsName,'err',`Entrée ${i+1} invalide.`,false);return}
+    if(!String(it.title||'').trim())add(state.filmsName,'warn',`Entrée ${i+1} sans titre : un nom neutre peut être attribué.`,true);
+    if(!String(it.meta||'').trim()||!/^#EXTINF:/i.test(it.meta||''))add(state.filmsName,'warn',`Métadonnées incorrectes à l’entrée ${i+1} : en-tête EXTINF standardisable.`,true);
+    if(!String(it.url||'').trim())add(state.filmsName,'err',`Lien absent à l’entrée ${i+1} (${it.title||'sans titre'}). Impossible d’inventer l’adresse.`,false);
+    else if(!/^https?:\/\//i.test(it.url))add(state.filmsName,'err',`Adresse non HTTP(S) à l’entrée ${i+1} (${it.title||'sans titre'}). À vérifier manuellement.`,false);
+   });
+   const urls=new Map();state.films.items.forEach((it,i)=>{const u=String(it?.url||'').trim();if(u){if(urls.has(u))add(state.filmsName,'warn',`Lien identique présent aux entrées ${urls.get(u)} et ${i+1} : vérifie qu’il ne s’agit pas d’un doublon volontaire.`,false);else urls.set(u,i+1)}});
+  }
+ }
+ if(state.series){
+  if(!state.series||!Array.isArray(state.series.groups))add(state.seriesName,'err','La structure W3U ne contient pas de tableau « groups ». Impossible de réparer sans connaître sa structure.',false);
+  else{
+   if(!state.series.groups.length)add(state.seriesName,'info','Aucun groupe ou série dans le W3U.');
+   state.series.groups.forEach((serie,i)=>{
+    if(!serie||typeof serie!=='object'){add(state.seriesName,'err',`Élément ${i+1} de groups invalide.`,false);return}
+    if(!String(serie.name||'').trim())add(state.seriesName,'warn',`Nom manquant dans le groupe ${i+1} : un nom neutre peut être attribué.`,true);
+    const seasonGroups=Array.isArray(serie.groups)?serie.groups:(Array.isArray(serie.seasons)?serie.seasons:null);
+    if(!seasonGroups && !Array.isArray(serie.stations))add(state.seriesName,'warn',`« ${serie.name||'Groupe '+(i+1)} » ne contient ni groupes de saisons ni liste d’épisodes identifiable.`,false);
+    if(seasonGroups){
+      const numbered=seasonGroups.map((s,j)=>({s,j,n:Number(String(s?.name||'').match(/\d+/)?.[0])})).filter(x=>Number.isFinite(x.n)&&x.n>0);
+      const sorted=[...numbered].sort((a,b)=>a.n-b.n);
+      const actual=numbered.map(x=>x.n),expected=sorted.map(x=>x.n);
+      if(actual.some((n,k)=>n!==expected[k]))add(state.seriesName,'err',`Ordre incorrect des saisons dans « ${serie.name||'Série '+(i+1)} » : ${actual.join(', ')}. Ordre attendu : ${expected.join(', ')}.`,true);
+      const duplicates=actual.filter((n,k)=>actual.indexOf(n)!==k);
+      if(duplicates.length)add(state.seriesName,'err',`Saison(s) en double dans « ${serie.name||'Série '+(i+1)} » : ${[...new Set(duplicates)].join(', ')}. À vérifier manuellement.`,false);
+      seasonGroups.forEach((season,j)=>{
+      if(!season||typeof season!=='object'){add(state.seriesName,'err',`Saison ${j+1} de « ${serie.name||'groupe '+(i+1)} » invalide.`,false);return}
+      if(!String(season.name||'').trim())add(state.seriesName,'warn',`Nom manquant pour une saison de « ${serie.name||'groupe '+(i+1)} » : nom neutre possible.`,true);
+      const eps=Array.isArray(season.stations)?season.stations:(Array.isArray(season.episodes)?season.episodes:null);
+      if(!eps)add(state.seriesName,'warn',`Liste d’épisodes absente pour ${season.name||'une saison'} de « ${serie.name||'groupe '+(i+1)} ».`,false);
+      else eps.forEach((ep,k)=>{
+       if(!ep||typeof ep!=='object'){add(state.seriesName,'err',`Épisode ${k+1} invalide dans ${season.name||'une saison'}.`,false);return}
+       const url=ep.url||ep.link||'';
+       if(!String(url).trim())add(state.seriesName,'err',`Lien absent pour l’épisode ${ep.name||k+1} de ${serie.name||'la série'}.`,false);
+       else if(!/^https?:\/\//i.test(url))add(state.seriesName,'err',`Lien non HTTP(S) pour l’épisode ${ep.name||k+1} de ${serie.name||'la série'}.`,false);
+       if(!String(ep.name||'').trim())add(state.seriesName,'warn',`Nom manquant pour un épisode de ${season.name||'la saison'} : nom neutre possible.`,true);
+      });
+      });
+     }
+   });
+  }
+ }
+ return {findings,fixable,manual};
+}
+function renderAudit(){
+ const a=auditPlaylists(),el=$('auditResults');
+ $('auditSummary').textContent=`${a.findings.length} point(s) détecté(s) · ${a.fixable} correction(s) automatique(s) possible(s) · ${a.manual} problème(s) nécessitant une vérification manuelle.`;
+ $('auditSummary').className='status '+(a.manual?'err':a.fixable?'':'ok');
+ el.innerHTML=a.findings.length?a.findings.map(f=>`<div class="entry"><div class="entry-main"><strong>${esc(f.file)} — ${esc(f.level.toUpperCase())}</strong><div class="hint">${esc(f.msg)}</div></div><span class="hint">${f.canFix?'Corrigeable':'À vérifier'}</span></div>`).join(''):'<p class="status ok">Aucune erreur détectée. Les fichiers semblent correctement organisés.</p>';
+ return a;
+}
+function repairSafeIssues(){
+ if(state.films&&Array.isArray(state.films.items)){
+  state.films.items.forEach((it,i)=>{
+   if(!it.title||!String(it.title).trim())it.title=`Élément ${i+1}`;
+   if(!it.meta||!/^#EXTINF:/i.test(it.meta||''))it.meta='#EXTINF:-1';
+  });
+ }
+ if(state.series&&Array.isArray(state.series.groups)){
+  state.series.groups.forEach((serie,i)=>{
+   if(!serie||typeof serie!=='object')return;
+   if(!String(serie.name||'').trim())serie.name=`Série ${i+1}`;
+   const seasons=Array.isArray(serie.groups)?serie.groups:(Array.isArray(serie.seasons)?serie.seasons:null);
+   if(seasons){
+    seasons.sort((a,b)=>{
+     const na=Number(String(a?.name||'').match(/\d+/)?.[0]||0),nb=Number(String(b?.name||'').match(/\d+/)?.[0]||0);
+     if(!na&&!nb)return 0;if(!na)return 1;if(!nb)return -1;return na-nb;
+    });
+    seasons.forEach((season,j)=>{
+    if(!season||typeof season!=='object')return;
+    if(!String(season.name||'').trim())season.name=`Saison ${j+1}`;
+    const eps=Array.isArray(season.stations)?season.stations:(Array.isArray(season.episodes)?season.episodes:null);
+    if(eps)eps.forEach((ep,k)=>{if(ep&&typeof ep==='object'&&!String(ep.name||'').trim())ep.name=`Épisode ${k+1}`});
+    });
+   }
+  });
+ }
+}
+$('runAudit').onclick=renderAudit;
+$('repairGenerate').onclick=()=>{
+ const before=renderAudit();
+ if(!state.films&&!state.series){$('repairStatus').textContent='Charge au moins un fichier avant de lancer la correction.';$('repairStatus').className='status err';return}
+ if(before.fixable===0){
+  $('repairStatus').textContent=before.manual?`Aucune correction automatique sûre à appliquer. ${before.manual} problème(s) nécessitent une intervention manuelle. Aucun fichier n’a été modifié ni téléchargé.`:'Aucune erreur détectée : rien à corriger. Aucun nouveau fichier n’a été généré.';
+  $('repairStatus').className=before.manual?'status err':'status ok';return;
+ }
+ repairSafeIssues();
+ const after=renderAudit();
+ let n=0;
+ if(state.series){download(state.seriesName,JSON.stringify(state.series,null,2),'application/json;charset=utf-8');n++}
+ if(state.films){download(state.filmsName,serializeM3U(state.films),'audio/x-mpegurl;charset=utf-8');n++}
+ $('repairStatus').textContent=`Correction terminée : ${before.fixable} correction(s) automatique(s), ${n} fichier(s) généré(s). ${after.manual} problème(s) restent à vérifier manuellement (notamment les liens absents ou invalides).`;
+ $('repairStatus').className=after.manual?'status err':'status ok';
+ updateCounts();updateFinal();
+};
+
+function updateFinal(){const a=state.series?`${state.seriesName} : ${state.series.groups.length} séries/groupes`:'Fichier séries non chargé';const b=state.films?`${state.filmsName} : ${state.films.items.length} films/liens`:'Fichier films non chargé';$('finalSummary').textContent=a+' · '+b;$('generate').disabled=!(state.series||state.films)}
+function download(name,content,type){const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)}
+function generateFiles(){let n=0;if(state.series){download(state.seriesName,JSON.stringify(state.series,null,2),'application/json;charset=utf-8');n++}if(state.films){download(state.filmsName,serializeM3U(state.films),'audio/x-mpegurl;charset=utf-8');n++}$('finalStatus').textContent=`Finalisation terminée : ${n} fichier(s) généré(s). Les fichiers source n’ont pas été écrasés.`;$('finalStatus').className='status ok'};
+$('generate').onclick=generateFiles;$('generateBottom').onclick=generateFiles;
+updateCounts();refreshReplaceTargets();refreshPosterTargets();
+})();
+</script></body></html>
